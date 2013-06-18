@@ -1,0 +1,88 @@
+<h1>Blackjack</h1>
+
+<p>Welcome <%= session[:player_name] %> </p>
+
+
+<form action="/game" method="get">
+<input type="submit" value= "new game" class="btn">
+</form>
+
+Dealer's cards:
+
+<% dear_total = 0  %>
+<ul>
+<% session[:dealer_cards].each do  |card|   %>
+<% card.to_s   %>
+<img src="/images/cards/<%=  "#{card[0]}_#{card[1]}"   %>.jpg">
+
+<%     if card[1] == 'ace'                    %>
+ <%         dear_total = dear_total + 11                    %>
+ <%     elsif card[1].to_i == 0                    %>
+ <%         dear_total = dear_total + 10                    %>
+ <%     else                    %>
+ <%         dear_total = dear_total + card[1].to_i                    %>
+ <%     end                    %>
+
+
+<% end %>
+
+
+<% if dear_total > 21   %>
+<%         session[:player_cards].select{|v|v[1]=='ace'}.count.times  do%>
+ <%             dear_total = dear_total - 10     %>
+<% end %>
+<% end %>
+
+</ul>
+<p>Dealer has total of <%= dear_total %></p>
+<br/>
+
+
+
+Player's cards:
+
+<% session[:player_busted] = false    %>
+
+<ul>
+
+ <%# value = session[:player_cards].map{|card| card[1]}   %>
+
+
+<% player_total = 0  %>
+  <% session[:player_cards].each do |card|  %>
+  <% card.to_s   %>
+  <img src="/images/cards/<%=  "#{card[0]}_#{card[1]}"   %>.jpg">
+
+<%     if card[1] == 'ace'                    %>
+ <%         player_total = player_total + 11                    %>
+ <%     elsif card[1].to_i == 0                    %>
+ <%         player_total = player_total + 10                    %>
+ <%     else                    %>
+ <%         player_total = player_total + card[1].to_i                    %>
+ <%     end                    %>
+
+  <% end %>
+
+<% if player_total > 21   %>
+<%         session[:player_cards].select{|v|v[1]=='ace'}.count.times  do%>
+ <%             player_total = player_total - 10     %>
+<% end %>
+<% end %>
+
+</ul>
+<p>player has total of <%= player_total %></p>
+
+<% if player_total > 21   %>
+and busted
+<% session[:player_busted] = true  %>
+<% end %>
+
+
+<form action="/hit"  method="post">
+ <input type="submit" value = "hit"/ class="btn">
+</form>
+
+<form action="/stay" method="post">
+ <input type="submit" value = "stay"/ class="btn">
+</form>
+

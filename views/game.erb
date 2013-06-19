@@ -1,119 +1,62 @@
-<h1>Blackjack</h1>
-
-<p>Welcome <%= session[:player_name] %> </p>
-
-
+<h1>Hello <%= session[:player_name].upcase    %>, welcome to Blackjack </h1>
 
 <div class="hero-unit">
-Dealer's cards:
 
-<% dealer_total = 0  %>
+<% if session[:player_blackjack] == true   %>
+<h2> Congratulations !! <%= session[:player_name] %> hits blackjack !!  </h2>
 
-<ul>
-<% session[:dealer_cards].each do  |card|   %>
-<% card.to_s   %>
-<img src="/images/cards/<%=  "#{card[0]}_#{card[1]}"   %>.jpg">
+<% elsif session[:dealer_busted] == true   %>
+<h2> Congratulations !! Dealer busted,  <%= session[:player_name] %> wins !!  </h2>
 
+<% elsif session[:player_busted] == true %>
+<h2> Sorry !!  <%= session[:player_name] %> is busted!!  </h2>
 
-<%     if card[1] == 'ace'                    %>
- <%         dealer_total = dealer_total + 11                    %>
- <%     elsif card[1].to_i == 0                    %>
- <%         dealer_total = dealer_total + 10                    %>
- <%     else                    %>
- <%         dealer_total = dealer_total + card[1].to_i                    %>
- <%     end                    %>
+<% elsif session[:dealer_blackjack] == true %>
+<h2> Sorry !!  Dealer hits blackjack!!  </h2>
+
+<% end %>
+
+<h3>Dealer cards:   </h3>
+
+<%  if session[:dealer_turn] == true   %>
+    <%session[:dealer_cards].each do  |card|   %>
+    <img src="/images/cards/<%=  "#{card[0]}_#{card[1]}"   %>.jpg">
+    <%end %>
+
+    <p>with total of <%= total(session[:dealer_cards])  %> </p>
+    <% if total(session[:dealer_cards]) < 17    %>
+    <form action = '/game/dealer/hit' method = 'post'>
+    <input type = 'submit' value = "press to see dealer's card" class = 'btn'>
+    </form>
+
 <% end %>
 
 
+<% else     %>
+    <img src="/images/cards/cover.jpg">
+    <img src="/images/cards/<%=  "#{session[:dealer_cards][1][0]}_#{session[:dealer_cards][1][1]}"   %>.jpg">
 
-<% if dealer_total > 21   %>
-<%         session[:player_cards].select{|v|v[1]=='ace'}.count.times  do%>
- <%             dealer_total = dealer_total - 10     %>
-<% end %>
-<% end %>
-
-</ul>
-
-<p>Dealer has total of <%= dealer_total %></p>
-
-
-
-<br/>
-<% if session[:player_turn] == false  %>
-
-<% if dealer_total < 17    %>
-<form action="/game/dealer/hit" method="post">
- <input type="submit" value = "click to see dealer's card"  class="btn btn-warning">
-
-</form>
-<%end  %>
-
-<%end  %>
-
-<% if dealer_total > 21   %>
-and busted
-<% session[:dealer_busted] = true  %>
-<% end %>
-
-
-
+<% end   %>
 
 </div>
 
+
 <div class="hero-unit">
 
-Player's cards:
+    <h3>Player cards:   </h3>
+    <%session[:player_cards].each do  |card|   %>
+    <img src="/images/cards/<%=  "#{card[0]}_#{card[1]}"   %>.jpg">
+    <%end %>
 
-<ul>
+<p>with total of <%= total(session[:player_cards])  %> </p>
+<%  if session[:player_turn] == true    %>
+    <form action = '/game/player/hit' method = 'post'>
+    <input type = 'submit' value = 'hit' class = 'btn btn-success'>
+    </form>
 
- <%# value = session[:player_cards].map{|card| card[1]}   %>
+    <form action = '/game/player/stay' method = 'post'>
+    <input type = 'submit' value = 'stay' class = 'btn btn-warning'>
+    </form>
 
-
-<% player_total = 0  %>
-  <% session[:player_cards].each do |card|  %>
-  <% card.to_s   %>
-  <img src="/images/cards/<%=  "#{card[0]}_#{card[1]}"   %>.jpg">
-
-<%     if card[1] == 'ace'                    %>
- <%         player_total = player_total + 11                    %>
- <%     elsif card[1].to_i == 0                    %>
- <%         player_total = player_total + 10                    %>
- <%     else                    %>
- <%         player_total = player_total + card[1].to_i                    %>
- <%     end                    %>
-
-  <% end %>
-
-<% if player_total > 21   %>
-<%         session[:player_cards].select{|v|v[1]=='ace'}.count.times  do%>
- <%             player_total = player_total - 10     %>
-<% end %>
-<% end %>
-
-</ul>
-
-
-<p>player has total of <%= player_total %></p>
-
-<% if player_total > 21   %>
-and busted
-<% session[:player_busted] = true  %>
-<% end %>
-
-<% if session[:player_turn] == true %>
-
-<form action="/game/player/hit"  method="post">
- <input type="submit" value = "hit" class="btn btn-success">
-</form>
-
-<form action="/game/player/stay" method="post">
- <input type="submit" value = "stay"  class="btn btn-warning">
-
-</form>
-
-<%end %>
-
-
-
-
+<% end  %>
 </div>

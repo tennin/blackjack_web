@@ -4,33 +4,39 @@ require 'pry'
 
 set :sessions, true
 
+helpers do
+  def total(cards)
+  face_values = cards.map{|card|card[1]}
+  total = 0
+  face_values.each do |value|
 
-def total(cards)
-
-total = 0
-cards.each do |card|
-card.to_s
-
-    if card[1] == 'ace'
-        total = total + 11
-     elsif card[1].to_i == 0
-         ptotal = total + 10
+      if value == 'ace'
+          total = total + 11
+      elsif value.to_i == 0
+           total = total + 10
       else
-         total = total + card[1].to_i
-     end
+           total = total + value.to_i
+      end
 
- end
+    end
 
-   if total > 21
-          cards.select{|v|v[1]=='ace'}.count.times  do
-              total = total - 10
-   end
- end
- total
- end
+      if total > 21
+            face_values.select{|v|v=='ace'}.count.times  do
+            total = total - 10
+      end
+    end
+   total
+  end
+
+  def location(card)
+    #card.each do |card|
+   "/images/cards/#{card[0]}_#{card[1]}.jpg"
+#end
+  end
 
 
 
+end
 
 
 
@@ -40,12 +46,11 @@ get '/' do
   else
     redirect '/new_player'
   end
-
 end
 
 
 get '/new_player' do
-erb :form
+  erb :new_player
 
 end
 
@@ -55,67 +60,71 @@ post '/new_player' do
 end
 
 post '/game/player/hit' do
-if session[:player_busted] == false
-session[:player_cards] << session[:deck].pop
-end
+  if session[:player_blackjack] == false  && total(session[:player_cards]) < 21
+    session[:player_cards] << session[:deck].pop
+  end
 
-erb :game
-
+  redirect '/game/check'
 end
 
 post '/game/player/stay' do
-    session[:player_turn] = false
-redirect '/game/dealer'
-
-  end
-
-get '/game/dealer' do
-
-#if  blackjack_busted?
-
-#else
-  #  while total < 17
-    #  hit
-      #blackjack_busted?
-   #   break
-   # end
-#end
-
-erb :game
+  session[:player_turn] = false
+  session[:dealer_turn] = true
+  redirect '/game/check'
 end
-
 
 post '/game/dealer/hit' do
-  if session[:dealer_busted] == false
-  session[:dealer_cards] << session[:deck].pop
+  if session[:dealer_blackjack] == false  && total(session[:dealer_cards]) < 17
+    session[:dealer_cards] << session[:deck].pop
+
+
+  end
+  redirect '/game/check'
 end
-erb :game
 
-end
 
-  get '/game' do
-session[:player_turn] = true
- session[:player_busted] = false
- session[:dealer_busted] = false
-session[:dealer_total] = 0
+get '/game' do
 
-  suits = ['spades', 'hearts','diamonds','clubs']
+  suits = ['spades', 'hearts', 'diamonds', 'clubs']
   values = ['ace','2','3','4','5','6','7','8','9','10','jack','queen','king']
   session[:deck] = suits.product(values).shuffle!
 
-  session[:dealer_cards] = []
   session[:player_cards] = []
+  session[:dealer_cards] = []
 
-  session[:dealer_cards] << session[:deck].pop
   session[:player_cards] << session[:deck].pop
   session[:dealer_cards] << session[:deck].pop
   session[:player_cards] << session[:deck].pop
+  session[:dealer_cards] << session[:deck].pop
+  session[:dealer_turn] = false
+  session[:player_turn] = true
+  session[:player_blackjack] = false
+  session[:player_busted] = false
+  session[:dealer_busted] = false
+  session[:dealer_blackjack] = false
 
-  erb :game
+
+redirect '/game/check'
+
 end
 
+get '/game/check' do
+  if total(session[:player_cards]) == 21
+    session[:player_blackjack] = true
+  elsif total(session[:player_cards]) > 21
+    session[:player_busted] = true
+  elsif total(session[:dealer_cards]) == 21
+    session[:dealer_blackjack] = true
+  elsif total(session[:dealer_cards]) > 21
+    session[:dealer_busted] = true
+
+  end
 
 
+
+
+    erb :game
+end
 
 
 

@@ -5,6 +5,33 @@ require 'pry'
 set :sessions, true
 
 
+def total(cards)
+
+total = 0
+cards.each do |card|
+card.to_s
+
+    if card[1] == 'ace'
+        total = total + 11
+     elsif card[1].to_i == 0
+         ptotal = total + 10
+      else
+         total = total + card[1].to_i
+     end
+
+ end
+
+   if total > 21
+          cards.select{|v|v[1]=='ace'}.count.times  do
+              total = total - 10
+   end
+ end
+ total
+ end
+
+
+
+
 
 
 get '/' do
@@ -27,7 +54,7 @@ post '/new_player' do
   redirect '/game'
 end
 
-post '/hit' do
+post '/game/player/hit' do
 if session[:player_busted] == false
 session[:player_cards] << session[:deck].pop
 end
@@ -36,14 +63,41 @@ erb :game
 
 end
 
-post '/stay' do
+post '/game/player/stay' do
+    session[:player_turn] = false
+redirect '/game/dealer'
 
-erb :game
   end
 
+get '/game/dealer' do
+
+#if  blackjack_busted?
+
+#else
+  #  while total < 17
+    #  hit
+      #blackjack_busted?
+   #   break
+   # end
+#end
+
+erb :game
+end
+
+
+post '/game/dealer/hit' do
+  if session[:dealer_busted] == false
+  session[:dealer_cards] << session[:deck].pop
+end
+erb :game
+
+end
 
   get '/game' do
-
+session[:player_turn] = true
+ session[:player_busted] = false
+ session[:dealer_busted] = false
+session[:dealer_total] = 0
 
   suits = ['spades', 'hearts','diamonds','clubs']
   values = ['ace','2','3','4','5','6','7','8','9','10','jack','queen','king']
@@ -59,3 +113,9 @@ erb :game
 
   erb :game
 end
+
+
+
+
+
+
